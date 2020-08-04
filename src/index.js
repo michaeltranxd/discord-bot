@@ -1,6 +1,7 @@
 const fs = require("fs");
 const Discord = require("discord.js");
 const { prefix, token } = require("./config.json");
+const Listen_Dot_Moe_Socket = require("./util/listen_dot_moe.js");
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -15,6 +16,9 @@ for (const file of commandFiles) {
 }
 
 const cooldowns = new Discord.Collection();
+
+// register a socket object to be used later in listen command
+client.listen_dot_moe_socket = new Listen_Dot_Moe_Socket(client);
 
 client.once("ready", () => {
   console.log("Ready!");
@@ -97,17 +101,26 @@ client.on("error", (error) => {
   console.log("invalid");
 });
 
+/* Exit Handling */
+
 function exitHandler() {
+  client.listen_dot_moe_socket.closeSocket();
   client.destroy();
 }
 
-process.on("SIGINT", function () {
+process.on("SIGINT", () => {
   console.log("Process interrupted");
   exitHandler();
   process.exit();
 });
 
-process.on("SIGTERM", function () {
+process.on("SIGTERM", () => {
   console.log("Process terminated");
+  exitHandler();
+  //process.exit();
+});
+
+process.on("uncaughtException", (error) => {
+  console.log(error);
   exitHandler();
 });
