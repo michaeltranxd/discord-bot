@@ -72,7 +72,7 @@ client.on("message", (message) => {
           )} more second(s) before reusing the \`${command.name}\` command.`
         )
         .then((msg) => {
-          msg.delete({ timeout: timeLeft * 1000 });
+          msg.delete({ timeout: 5 * 1000 });
         })
         .catch((error) => {
           console.log("Couldn't delete for some reason...", error);
@@ -92,3 +92,22 @@ client.on("message", (message) => {
 });
 
 client.login(token);
+client.on("error", (error) => {
+  console.log(error);
+  console.log("invalid");
+});
+
+function exitHandler() {
+  client.destroy();
+}
+
+process.on("SIGINT", function () {
+  console.log("Process interrupted");
+  exitHandler();
+  process.exit();
+});
+
+process.on("SIGTERM", function () {
+  console.log("Process terminated");
+  exitHandler();
+});

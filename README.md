@@ -4,7 +4,7 @@ Discord bot built from scratch using discord.js and the official [tutorial](http
 
 # Features
 
-TBD
+- Commands list
 
 # Setup
 
