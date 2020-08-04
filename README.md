@@ -9,3 +9,4 @@ TBD
 # Setup
 
 1.) Fill out config_template.json in /templates and rename to config.json with setup information (token, prefix, etc)
+2.) Run npm install to install dependencies
