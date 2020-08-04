@@ -8,4 +8,4 @@ TBD
 
 # Setup
 
-TBD
+1.) Fill out config_template.json in /templates and rename to config.json with setup information (token, prefix, etc)
