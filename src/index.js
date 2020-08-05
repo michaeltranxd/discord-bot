@@ -37,7 +37,12 @@ client.on("message", (message) => {
     );
 
   // command is not valid (we dont recognize this command)
-  if (!command) return;
+  if (!command) {
+    const helpCommand = client.commands.get("help");
+    return message.reply(
+      `I don't recognize that command, look at my available commands:\nrun \`${prefix}${helpCommand.name}\` to examine commands`
+    );
+  }
 
   // Checks for args if required
   if (command.args && !args.length) {

@@ -64,9 +64,14 @@ class Listen_Dot_Moe_Socket {
 
           if (artistObject.nameRomaji)
             status += `${artistObject.nameRomaji}(${artistObject.name})`;
-          else status = `${artistObject.name}`;
+          else status += `${artistObject.name}`;
 
-          this.client.user.setActivity(status, { type: "LISTENING" });
+          this.client.user
+            .setPresence({
+              activity: { name: status, type: "LISTENING" },
+              status: "online",
+            })
+            .catch(console.error);
 
           break;
         default:

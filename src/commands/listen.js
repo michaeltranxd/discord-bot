@@ -1,3 +1,6 @@
+const { vcTimeout } = require("../config.json");
+let interval;
+
 function joinAndPlay(message, voiceChannel, radioLink) {
   // Join the voice channel
   voiceChannel
@@ -9,11 +12,21 @@ function joinAndPlay(message, voiceChannel, radioLink) {
         }
         message.channel.send("Leaving voice chat!");
       });
-      message.reply("I'm here!");
 
       connection.play(radioLink, {
-        volume: 0.3,
+        volume: 0.7,
       });
+
+      message.client.clearInterval(interval);
+      interval = message.client.setInterval(() => {
+        if (voiceChannel.members.array().length === 1) {
+          // We are the only one in the channel... so lets disconnect
+          message.client.listen_dot_moe_socket.closeSocket();
+          connection.disconnect();
+          voiceChannel.disconnect;
+          message.client.clearInterval(interval);
+        }
+      }, vcTimeout * 60000);
 
       // Close old websocket before initializing a new one
       message.client.listen_dot_moe_socket.closeSocket();
@@ -53,6 +66,7 @@ module.exports = {
         // Check if bot has connection in voicechannel
         if (message.guild.me.voice.connetion) {
           // Bot is in channel with valid connection
+          message.client.listen_dot_moe_socket.closeSocket();
           message.guild.me.voice.connection.disconnect();
         }
       }
@@ -78,7 +92,7 @@ module.exports = {
         });
       } else {
         // Bot is in channel with invalid connection, we should reconnect
-        console.log("connection does not exists, try reconnecting");
+        //console.log("connection does not exists, try reconnecting");
         joinAndPlay(message, userChannel, radioLink);
       }
     }

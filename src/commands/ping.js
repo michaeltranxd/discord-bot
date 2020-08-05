@@ -1,7 +1,6 @@
 module.exports = {
   name: "ping",
   description: "Ping!",
-  aliases: ["p"],
   args: false,
   guildOnly: true,
   cooldown: 5,
