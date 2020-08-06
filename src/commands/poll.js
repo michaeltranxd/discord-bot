@@ -182,6 +182,7 @@ function startNewPoll(message, newArgs) {
       question: newArgs[0],
       deadline: time + Date.now(),
       emojiList: emoji.slice(0, optionSplit.length),
+      options: optionSplit,
     };
     pollList.set(msg.id, poll);
 
@@ -204,32 +205,52 @@ function endPoll(pollAuthor, msgId) {
   console.log(msgId);
 
   let pollList = polls.get(pollAuthor);
-  let { msgToEdit, embeddedMessage, emojiList, timeout } = pollList.get(msgId);
+  let {
+    msgToEdit,
+    embeddedMessage,
+    emojiList,
+    timeout,
+    options,
+  } = pollList.get(msgId);
   // Clear timeout
   msgToEdit.client.clearTimeout(timeout);
 
   let result = "";
 
-  // Find the winning "emoji"
-  let votes = msgToEdit.reactions.cache.map((reaction) => {
+  // Find the winning "emoji", first get rid of the unnecessary emojis that are not part of our options
+  let votes = msgToEdit.reactions.cache.filter((reaction) => {
+    return emojiList.includes(reaction._emoji.name);
+  });
+
+  // Then grab all the reaction counts
+  votes = votes.map((reaction) => {
     return reaction.count - 1;
   });
 
-  highestVoteNumber = Math.max.apply(null, votes);
-
-  winnerVoteIndex = [];
-  votes.forEach((vote, index) => {
-    if (vote === highestVoteNumber) winnerVoteIndex.push(index);
+  // Get indices of the votes and sort descending
+  indices = Array.from(Array(votes.length).keys());
+  indices.sort((a, b) => {
+    if (votes[a] > votes[b]) return -1;
+    else if (votes[a] < votes[b]) return 1;
+    else return 0;
   });
 
-  if (highestVoteNumber === 0) {
+  console.log(indices);
+  console.log(votes);
+
+  let winnerVoteAmount = Math.max(...votes);
+
+  console.log(winnerVoteAmount);
+
+  if (winnerVoteAmount === 0) {
     // This means no one voted
     result = "No one voted in the poll!";
-  } else if (winnerVoteIndex.length > 1) {
-    // Tie between options
-    result = "There was a tie between options:\n";
-    winnerVoteIndex.forEach((voteIndex) => {
-      result += `${emojiList[voteIndex]} (${highestVoteNumber} vote)\n`;
+  } else {
+    indices.forEach((voteIndex) => {
+      if (votes[voteIndex] === winnerVoteAmount) {
+        result += `${emojiList[voteIndex]} **- ${options[voteIndex]} (${votes[voteIndex]} vote)**\n`;
+      } else
+        result += `${emojiList[voteIndex]} - ${options[voteIndex]} (${votes[voteIndex]} vote)\n`;
     });
   }
 
@@ -239,6 +260,7 @@ function endPoll(pollAuthor, msgId) {
 
   // Update the poll message
   embeddedMessage.addField("Results", result);
+  embeddedMessage.setFooter("Ended");
   msgToEdit.edit(embeddedMessage);
   // Delete from poll list
   pollList.delete(msgId);
@@ -251,7 +273,8 @@ module.exports = {
   args: true, // Include if command requires args
   usage:
     "<question>; <time; ex: 1min/30min/2hr>; <answers seperated by commas>\n" +
-    "<stop> <message-id(id of poll message)>", // Include if args is true
+    "<stop> <message-id(id of poll message)>\n" +
+    "<list>", // Include if args is true
   guildOnly: true, // Include if exclusive to server
   cooldown: 5,
   execute(message, args) {
@@ -273,6 +296,8 @@ module.exports = {
             `Error: That poll does not exist or you weren't the creator of it...`
           );
         }
+      } else if (args[0] === "list") {
+        // list
       } else {
       }
     }
