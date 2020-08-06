@@ -220,7 +220,21 @@ function startNewPoll(message, newArgs) {
   });
 }
 
-function handlePollList() {}
+function handlePollList(message) {
+  let pollList = polls.get(message.author.id);
+  if (pollList) {
+    let polls = pollList.array();
+    if (polls.length > 0) {
+      let reply = "";
+      // Print out every poll available
+      polls.forEach((poll, index) => {
+        reply += `${poll.msgToEdit.id} - ${poll.question}\n`;
+      });
+      return message.reply(`\n\`${reply}\``);
+    }
+  }
+  return message.reply(`You don't have any polls yet.`);
+}
 
 function endPoll(pollAuthor, msgId) {
   let pollList = polls.get(pollAuthor);
@@ -296,8 +310,19 @@ module.exports = {
     let newArgs = args.join(" ").split(/ *;+ *;*/);
     console.log(newArgs);
 
+    if (args.length === 1) {
+      if (args[0] === "list") {
+        // list
+        handlePollList(message);
+      } else {
+        // We don't recognize that command
+        return message.reply(
+          `Error: Please consult the usage by typing\n \`${prefix}help ${this.name}\` to get more info`
+        );
+      }
+    }
     // we use args since we are doing spaces, no semicolons
-    if (args.length === 2) {
+    else if (args.length === 2) {
       // Check if args[0] is 'stop'
       if (args[0] === "stop") {
         // Check if args[1] is valid poll
@@ -310,9 +335,11 @@ module.exports = {
             `Error: That poll does not exist or you weren't the creator of it...`
           );
         }
-      } else if (args[0] === "list") {
-        // list
       } else {
+        // We don't recognize that command
+        return message.reply(
+          `Error: Please consult the usage by typing\n \`${prefix}help ${this.name}\` to get more info`
+        );
       }
     }
     // Make sure 3 arguments were given
