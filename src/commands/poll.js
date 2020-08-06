@@ -2,7 +2,7 @@ const { MessageEmbed } = require("discord.js");
 const { prefix } = require("../config.json");
 const Discord = require("discord.js");
 
-timeoutTime = 30000; // Update every minute
+timeoutTime = 30000; // Update every half minute
 let emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
 // polls will be organized by question as their n
@@ -67,11 +67,19 @@ function splitTimes(regexResult) {
     let hrIndex = elem.indexOf("hr");
 
     if (minIndex !== -1) {
-      splittedResult.min = parseInt(elem.slice(0, minIndex));
+      let numString = elem.slice(0, minIndex);
+
+      if (numString.length > 2) return null;
+
+      splittedResult.min = parseInt(numString);
       splittedResult.numSplits = splittedResult.numSplits + 1;
     }
     if (hrIndex !== -1) {
-      splittedResult.hr = parseInt(elem.slice(0, minIndex));
+      let numString = elem.slice(0, hrIndex);
+
+      if (numString.length > 2) return null;
+
+      splittedResult.hr = parseInt(numString);
       splittedResult.numSplits = splittedResult.numSplits + 1;
     }
   });
@@ -106,6 +114,10 @@ function startNewPoll(message, newArgs) {
     return message.reply(
       `Error: Make sure the question is more than 4 characters long!`
     );
+  } else if (question.length > 1024) {
+    return message.reply(
+      `Error: Make sure the question is less than 1024 characters long!`
+    );
   }
 
   // Only support ##min or ##hr, any amount of digits that doesnt exceed 24 hours for now
@@ -117,9 +129,13 @@ function startNewPoll(message, newArgs) {
   if (result) {
     let { hr, min, numSplits } = splitTimes(result);
 
-    if (numSplits > 2) {
+    if (!numSplits) {
       return message.reply(
-        `Error: Make sure you format the time right! Please consult the usage by typing\n \`${prefix}help ${this.name}\` to get more info`
+        `Error: Please keep the time to 2 digits max. ex: "1hr 5min". Please consult the usage by typing \`${prefix}help ${module.exports.name}\` to get more info`
+      );
+    } else if (numSplits > 2) {
+      return message.reply(
+        `Error: Make sure you format the time right! Please consult the usage by typing \`${prefix}help ${module.exports.name}\` to get more info`
       );
     }
 
@@ -137,9 +153,15 @@ function startNewPoll(message, newArgs) {
   let optionSplit = newArgs[2].split(/ *, */);
   if (optionSplit.length === 1 || optionSplit.length === 0) {
     return message.reply(
-      `Error: Make sure you supply at least two options for people to vote! Please consult the usage by typing\n \`${prefix}help ${this.name}\` to get more info`
+      `Error: Make sure you supply at least two options for people to vote! Please consult the usage by typing\n \`${prefix}help ${module.exports.name}\` to get more info`
+    );
+  } else if (optionSplit.length > emoji.length) {
+    // check if we don't have enough emojis for that many options!
+    return message.reply(
+      `Error: Please enter at **most** ${emoji.length} options!`
     );
   }
+
   // Get the poll options formatted as a field value
   let fields = getFieldsFromOptions(optionSplit);
 
@@ -153,12 +175,12 @@ function startNewPoll(message, newArgs) {
         name: "Poll Question",
         value: newArgs[0],
       },
-      { name: "Anonymous", value: "False", inline: true },
       {
         name: "Deadline",
         value: new Date(time + Date.now()).toLocaleTimeString(),
         inline: true,
       },
+      { name: "\u200B", value: "\u200B", inline: true },
       { name: "Author", value: `<@${message.author.id}>`, inline: true },
       { name: "\u200B", value: "\u200B" },
       { name: "Poll Options", value: fields }
@@ -201,9 +223,6 @@ function startNewPoll(message, newArgs) {
 function handlePollList() {}
 
 function endPoll(pollAuthor, msgId) {
-  console.log(pollAuthor);
-  console.log(msgId);
-
   let pollList = polls.get(pollAuthor);
   let {
     msgToEdit,
@@ -235,12 +254,7 @@ function endPoll(pollAuthor, msgId) {
     else return 0;
   });
 
-  console.log(indices);
-  console.log(votes);
-
   let winnerVoteAmount = Math.max(...votes);
-
-  console.log(winnerVoteAmount);
 
   if (winnerVoteAmount === 0) {
     // This means no one voted
