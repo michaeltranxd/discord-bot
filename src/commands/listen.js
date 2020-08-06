@@ -6,40 +6,43 @@ function joinAndPlay(message, voiceChannel, radioLink) {
   voiceChannel
     .join()
     .then((connection) => {
+      play(message, connection, radioLink);
       connection.on("disconnect", (error) => {
         if (error) {
           console.log(error);
         }
         message.channel.send("Leaving voice chat!");
       });
-
-      connection.play(radioLink, {
-        volume: 0.7,
-      });
-
-      message.client.clearInterval(interval);
-      interval = message.client.setInterval(() => {
-        if (voiceChannel.members.array().length === 1) {
-          // We are the only one in the channel... so lets disconnect
-          message.client.listen_dot_moe_socket.closeSocket();
-          connection.disconnect();
-          voiceChannel.disconnect;
-          message.client.clearInterval(interval);
-        }
-      }, vcTimeout * 60000);
-
-      // Close old websocket before initializing a new one
-      message.client.listen_dot_moe_socket.closeSocket();
-
-      // set radiolink and start websocket previously created in index.js,
-      //  to grab song metadata (title, artist, so on)
-      message.client.listen_dot_moe_socket.setRadioLink(radioLink);
-      message.client.listen_dot_moe_socket.init();
     })
     .catch((error) => {
       console.log(error);
       return message.reply("I had trouble joining the voice channel...");
     });
+}
+
+function play(message, voiceConnection, radioLink) {
+  voiceConnection.play(radioLink, {
+    volume: 0.7,
+  });
+
+  message.client.clearInterval(interval);
+  interval = message.client.setInterval(() => {
+    if (voiceChannel.members.array().length === 1) {
+      // We are the only one in the channel... so lets disconnect
+      message.client.listen_dot_moe_socket.closeSocket();
+      voiceConnection.disconnect();
+      voiceChannel.disconnect;
+      message.client.clearInterval(interval);
+    }
+  }, vcTimeout * 60000);
+
+  // Close old websocket before initializing a new one
+  message.client.listen_dot_moe_socket.closeSocket();
+
+  // set radiolink and start websocket previously created in index.js,
+  //  to grab song metadata (title, artist, so on)
+  message.client.listen_dot_moe_socket.setRadioLink(radioLink);
+  message.client.listen_dot_moe_socket.init();
 }
 
 module.exports = {
