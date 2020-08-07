@@ -31,7 +31,7 @@ function play(message, voiceConnection, radioLink) {
       // We are the only one in the channel... so lets disconnect
       message.client.listen_dot_moe_socket.closeSocket();
       voiceConnection.disconnect();
-      voiceChannel.disconnect;
+      voiceChannel.leave();
       message.client.clearInterval(interval);
     }
   }, vcTimeout * 60000);
@@ -67,10 +67,12 @@ module.exports = {
       // Check if bot is in a voiceChannel
       if (botChannel) {
         // Check if bot has connection in voicechannel
-        if (message.guild.me.voice.connetion) {
+        if (message.guild.me.voice.connection) {
           // Bot is in channel with valid connection
           message.client.listen_dot_moe_socket.closeSocket();
           message.guild.me.voice.connection.disconnect();
+          message.client.clearInterval(interval);
+          return;
         }
       }
       // Bot is not in voice channel

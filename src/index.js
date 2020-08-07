@@ -1,7 +1,9 @@
 const fs = require("fs");
+const fetch = require("node-fetch");
 const Discord = require("discord.js");
-const { prefix, token } = require("./config.json");
+const { prefix, token, osrs_item_api } = require("./config.json");
 const Listen_Dot_Moe_Socket = require("./util/listen_dot_moe.js");
+const RunescapeAPIInstance = require("./util/runescape_api.js");
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -19,6 +21,28 @@ const cooldowns = new Discord.Collection();
 
 // register a socket object to be used later in listen command
 client.listen_dot_moe_socket = new Listen_Dot_Moe_Socket(client);
+
+// Run fetch to runescape api GE
+(async () => {
+  try {
+    console.log("Before fetch");
+    const apiResponse = await fetch(osrs_item_api);
+
+    const apiJson = await apiResponse.json();
+
+    RunescapeAPIInstance.init(apiJson);
+
+    // console.log(
+    //   RunescapeAPIInstance.getItemGEString(
+    //     RunescapeAPIInstance.getItemByName("abyssal whip")
+    //   )
+    // );
+    // After initializing our data, we can start
+    client.login(token);
+  } catch (error) {
+    console.log("Fetching API went wrong", error);
+  }
+})();
 
 client.once("ready", () => {
   console.log("Ready!");
@@ -100,7 +124,6 @@ client.on("message", (message) => {
   }
 });
 
-client.login(token);
 client.on("error", (error) => {
   console.log(error);
   console.log("invalid");
@@ -110,6 +133,7 @@ client.on("error", (error) => {
 
 function exitHandler() {
   client.listen_dot_moe_socket.closeSocket();
+  RunescapeAPIInstance.shutdown();
   client.destroy();
 }
 
