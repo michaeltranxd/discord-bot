@@ -4,10 +4,24 @@ const Discord = require("discord.js");
 
 const { osrs_ge_api_base, osrs_ge_api_price } = require("./api_links.json");
 
+// Function helper for calling await on every callback
+// and keeping track of the result returned from callback
+// Callbacks should be async
+// async function asyncForEachGetResult(array, callback) {
+//   let result = "";
+
+//   for (let index = 0; index < array.length; index++) {
+//     // We call the callback for each entry
+//     result += (await callback(array[index], index, array)) + "\n";
+//   }
+
+//   return result;
+// }
+
 class RunescapeAPI {
   _instance;
   _itemListByID;
-  _itemListByName;
+  _itemListByName; // This will be only GE items
   _itemAbbrv;
 
   constructor() {
@@ -35,7 +49,7 @@ class RunescapeAPI {
     let keys = Object.keys(jsonData);
 
     keys.forEach((key) => {
-      if (!jsonData[key].duplicate) {
+      if (!jsonData[key].duplicate && jsonData[key].tradeable_on_ge) {
         this._itemListByID.set(key, jsonData[key]);
         this._itemListByName.set(
           jsonData[key].name.toLowerCase(),
@@ -60,6 +74,7 @@ class RunescapeAPI {
   searchItemByName(itemName) {
     let names = this._itemListByName.keyArray();
 
+    console.log(names);
     let potentialItems = [];
 
     // Loop through each name and check if the search has matches
@@ -67,6 +82,7 @@ class RunescapeAPI {
       if (name.indexOf(itemName) > -1) {
         // Found a potential match...
         potentialItems.push(name);
+        console.log(itemName);
       }
     });
 
@@ -74,50 +90,57 @@ class RunescapeAPI {
   }
 
   async getPriceOfItem(item) {
-    /* TODO */
-    console.log(item);
-    console.log("hehe");
     let api_link = osrs_ge_api_base + osrs_ge_api_price + item.id;
     // Fetch json for price
+    try {
+      const apiResponse = await fetch(api_link);
 
-    const getPriceFromAPI = async () => {
-      try {
-        const apiResponse = await fetch(api_link);
-
-        const apiJson = await apiResponse.json();
-        return apiJson.item.current.price;
-      } catch (error) {
-        console.log("Fetching API went wrong", error);
-      }
-    };
-
-    let itemPrice = await getPriceFromAPI();
-    return itemPrice;
+      const apiJson = await apiResponse.json();
+      return apiJson.item.current.price;
+    } catch (error) {
+      console.log("Fetching API went wrong", error);
+    }
   }
+
+  // Future improvements:
+  // Save prices + timestamp in a Discord.Collection() with keys of item.name or item.id as cache
+  // Then save into a file when bot is closed. This way the bot can have a cache of the prices
+  // and can open the file to check if it needs to fetch json (fetch json seems really slow so we need a cache)
 
   async printPriceOfItem(message, itemName) {
-    let item = this.getItemByName(itemName);
+    let potItemNames = this.searchItemByName(itemName.toLowerCase());
 
-    let itemPrice = await this.getPriceOfItem(item);
+    if (potItemNames.length == 0) {
+      return message.reply(
+        `Error: I could not find any item that matches ${itemName}`
+      );
+    }
 
-    console.log(
-      `${item.name}: GE average \`${itemPrice}\` HA value \`${item.highalch}\``
-    );
+    // Sort out items alphbetical
+    potItemNames = potItemNames.sort();
+
+    // Grab the first item
+    let result = await this.getPriceString(potItemNames[0]);
+
+    message.reply(result);
   }
 
-  getItemGEString(item) {
-    let itemPrice = this.getPriceOfItem(item);
+  async getPriceString(itemName) {
+    let item = this.getItemByName(itemName);
+    let itemPrice = await this.getPriceOfItem(item);
     return `${item.name}: GE average \`${itemPrice}\` HA value \`${item.highalch}\``;
   }
 
-  addAbbrv(item, abbrv) {
-    if (!this._itemAbbrv[0]) {
-      this._itemAbbrv[0] = [];
-    }
-    if (!this._itemAbbrv[0].includes("hello")) {
-      this._itemAbbrv[0].push("hello");
-    }
-  }
+  // Future feature:
+  // Add abbreviations for items and be able to store that in file
+  // addAbbrv(item, abbrv) {
+  //   if (!this._itemAbbrv[0]) {
+  //     this._itemAbbrv[0] = [];
+  //   }
+  //   if (!this._itemAbbrv[0].includes("hello")) {
+  //     this._itemAbbrv[0].push("hello");
+  //   }
+  // }
 
   shutdown() {
     let item_abbrv_json = JSON.stringify(this._itemAbbrv);

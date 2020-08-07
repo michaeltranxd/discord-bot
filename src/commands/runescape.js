@@ -1,3 +1,5 @@
+const RunescapeAPIInstance = require("../util/runescape_api.js");
+
 module.exports = {
   name: "osrs",
   description: "Utilize runescape api",
@@ -7,9 +9,16 @@ module.exports = {
   guildOnly: true, // Include if exclusive to server
   cooldown: 5,
   execute(message, args) {
-    let potItems = RunescapeAPIInstance.searchItemByName("abyssal whip");
-
-    console.log(potItems);
-    console.log(item);
+    if (args != 2) {
+      if (args[0] == "price") {
+        // Combine the args into a string for item to search
+        let itemName = args.slice(1).join(" ").trim();
+        RunescapeAPIInstance.printPriceOfItem(message, itemName);
+      } else {
+        return message.reply(
+          `Error: I do not understand that argument! Please consult the usage by typing\n \`${prefix}help ${this.name}\` to get more info`
+        );
+      }
+    }
   },
 };
