@@ -2,7 +2,7 @@ const fs = require("fs");
 const fetch = require("node-fetch");
 const Discord = require("discord.js");
 
-const { osrs_ge_api_base, osrs_ge_api_price } = require("../config.json");
+const { osrs_ge_api_base, osrs_ge_api_price } = require("./api_links.json");
 
 class RunescapeAPI {
   _instance;
@@ -35,8 +35,13 @@ class RunescapeAPI {
     let keys = Object.keys(jsonData);
 
     keys.forEach((key) => {
-      this._itemListByID.set(key, jsonData[key]);
-      this._itemListByName.set(jsonData[key].name.toLowerCase(), jsonData[key]);
+      if (!jsonData[key].duplicate) {
+        this._itemListByID.set(key, jsonData[key]);
+        this._itemListByName.set(
+          jsonData[key].name.toLowerCase(),
+          jsonData[key]
+        );
+      }
     });
   }
 
@@ -68,27 +73,37 @@ class RunescapeAPI {
     return potentialItems;
   }
 
-  // getPriceOfItem(item) {
-  //   /* TODO */
-  //   console.log(item);
-  //   let api_link = osrs_ge_api_base + osrs_ge_api_price + item.id;
-  //   // Fetch json for price
+  async getPriceOfItem(item) {
+    /* TODO */
+    console.log(item);
+    console.log("hehe");
+    let api_link = osrs_ge_api_base + osrs_ge_api_price + item.id;
+    // Fetch json for price
 
-  //   const getPriceFromAPI = async () => {
-  //     try {
-  //       const apiResponse = await fetch(api_link);
+    const getPriceFromAPI = async () => {
+      try {
+        const apiResponse = await fetch(api_link);
 
-  //       const apiJson = await apiResponse.json();
-  //       return apiJson.item.today.price;
-  //     } catch (error) {
-  //       console.log("Fetching API went wrong", error);
+        const apiJson = await apiResponse.json();
+        return apiJson.item.current.price;
+      } catch (error) {
+        console.log("Fetching API went wrong", error);
+      }
+    };
 
-  //     }
-  //   };
+    let itemPrice = await getPriceFromAPI();
+    return itemPrice;
+  }
 
-  //   let itemPrice = await getPriceFromAPI;
-  //   return itemPrice;
-  // }
+  async printPriceOfItem(message, itemName) {
+    let item = this.getItemByName(itemName);
+
+    let itemPrice = await this.getPriceOfItem(item);
+
+    console.log(
+      `${item.name}: GE average \`${itemPrice}\` HA value \`${item.highalch}\``
+    );
+  }
 
   getItemGEString(item) {
     let itemPrice = this.getPriceOfItem(item);

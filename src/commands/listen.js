@@ -1,4 +1,5 @@
 const { vcTimeout } = require("../config.json");
+const { radioKorean, radioJapanese } = require("../util/api_links.json");
 let interval;
 
 function joinAndPlay(message, voiceChannel, radioLink) {
@@ -60,9 +61,9 @@ module.exports = {
 
     // Check if command is valid
     if (args[0] === "jpop" || args[0] === "j") {
-      radioLink = "https://listen.moe/stream";
+      radioLink = radioJapanese;
     } else if (args[0] === "kpop" || args[0] === "k") {
-      radioLink = "https://listen.moe/kpop/stream";
+      radioLink = radioKorean;
     } else if (args[0] === "stop" || args[0] === "s") {
       // Check if bot is in a voiceChannel
       if (botChannel) {

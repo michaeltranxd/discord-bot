@@ -7,7 +7,9 @@ module.exports = {
   guildOnly: true, // Include if exclusive to server
   cooldown: 5,
   execute(message, args) {
-    let BASE_URL = "http://services.runescape.com/m=itemdb_oldschool";
-    console.log("how'd they know");
+    let potItems = RunescapeAPIInstance.searchItemByName("abyssal whip");
+
+    console.log(potItems);
+    console.log(item);
   },
 };

@@ -1,9 +1,10 @@
 const fs = require("fs");
 const fetch = require("node-fetch");
 const Discord = require("discord.js");
-const { prefix, token, osrs_item_api } = require("./config.json");
+const { prefix, token } = require("./config.json");
 const Listen_Dot_Moe_Socket = require("./util/listen_dot_moe.js");
 const RunescapeAPIInstance = require("./util/runescape_api.js");
+const { osrs_item_api } = require("./util/api_links.json");
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -32,11 +33,6 @@ client.listen_dot_moe_socket = new Listen_Dot_Moe_Socket(client);
 
     RunescapeAPIInstance.init(apiJson);
 
-    // console.log(
-    //   RunescapeAPIInstance.getItemGEString(
-    //     RunescapeAPIInstance.getItemByName("abyssal whip")
-    //   )
-    // );
     // After initializing our data, we can start
     client.login(token);
   } catch (error) {

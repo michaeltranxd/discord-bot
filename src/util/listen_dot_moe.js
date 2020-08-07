@@ -1,5 +1,7 @@
 const WebSocket = require("ws");
 
+const { wsKorean, wsJapanese, radioJapanese } = require("./api_links.json");
+
 class Listen_Dot_Moe_Socket {
   client;
   heartbeatInterval;
@@ -17,10 +19,10 @@ class Listen_Dot_Moe_Socket {
   }
 
   setRadioLink(radioLink) {
-    if (radioLink === "https://listen.moe/stream") {
-      this.wsLink = "wss://listen.moe/gateway_v2";
+    if (radioLink === radioJapanese) {
+      this.wsLink = wsJapanese;
     } else {
-      this.wsLink = "wss://listen.moe/kpop/gateway_v2";
+      this.wsLink = wsKorean;
     }
   }
 
