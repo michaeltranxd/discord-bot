@@ -4,9 +4,10 @@ Discord bot built from scratch using discord.js and the official [tutorial](http
 
 # Features
 
-- Radio playing through [listen.moe](https://listen.moe/), both korean and japanese
+- Radio playing streams on [listen.moe](https://listen.moe/), both korean and japanese
 - Basic polling functionality, creating + stopping polls
-- [WIP]Runescape GE item price search
+- Runescape GE item price search
+- Runescape player hiscore search
 
 # Requirements
 
@@ -20,4 +21,4 @@ Discord bot built from scratch using discord.js and the official [tutorial](http
 3. Follow setup for bot application on discord.js [guide](https://discordjs.guide/preparations/setting-up-a-bot-application.html)
 4. Rename templates/config_template.json to config.json and place inside src folder (same level as index.js)
 5. Fill out config.json with your bot token and important configurations
-6. Run npm . in the console that currently has the /src/ folder as it's path
+6. Run npm . in you preferred terminal that currently has the /src/ folder as it's path and the requirements

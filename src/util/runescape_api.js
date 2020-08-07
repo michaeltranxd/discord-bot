@@ -2,7 +2,11 @@ const fs = require("fs");
 const fetch = require("node-fetch");
 const Discord = require("discord.js");
 
-const { osrs_ge_api_base, osrs_ge_api_price } = require("./api_links.json");
+const {
+  osrs_ge_api_base,
+  osrs_ge_api_price,
+  osrs_hisore_api_base,
+} = require("./api_links.json");
 
 // Function helper for calling await on every callback
 // and keeping track of the result returned from callback
@@ -17,6 +21,141 @@ const { osrs_ge_api_base, osrs_ge_api_price } = require("./api_links.json");
 
 //   return result;
 // }
+
+/* hiscore is split into skills first then activites, hiscore[0] would refer to Overall
+     STATS: Overall, Attack, Defence, Strength, Hitpoints, Ranged, Prayer, Magic, Cooking, Woodcutting, Fletching, Fishing, Firemaking, 
+            Crafting, Smithing, Mining, Herblore, Agility, Thieving, Slayer, Farming, Runecrafting, Hunter, Construction. 
+     ACTIVITES: League Points,Bounty Hunter - Hunter,Bounty Hunter - Rogue,Clue Scrolls (all),Clue Scrolls (beginner),Clue Scrolls (easy),
+                Clue Scrolls (medium),Clue Scrolls (hard),Clue Scrolls (elite),Clue Scrolls (master),LMS - Rank,Abyssal Sire,Alchemical Hydra,
+                Barrows Chests,Bryophyta,Callisto,Cerberus,Chambers of Xeric,Chambers of Xeric: Challenge Mode,Chaos Elemental,Chaos Fanatic,
+                Commander Zilyana,Corporeal Beast,Crazy Archaeologist,Dagannoth Prime,Dagannoth Rex,Dagannoth Supreme,Deranged Archaeologist,
+                General Graardor,Giant Mole,Grotesque Guardians,Hespori,Kalphite Queen,King Black Dragon,Kraken,Kree'Arra,K'ril Tsutsaroth,Mimic,
+                Nightmare,Obor,Sarachnis,Scorpia,Skotizo,The Gauntlet,The Corrupted Gauntlet,Theatre of Blood,Thermonuclear Smoke Devil,
+                TzKal-Zuk,TzTok-Jad,Venenatis,Vet'ion,Vorkath,Wintertodt,Zalcano,Zulrah
+     Within each hiscore element, it is organized by {rank, level, experience}
+  */
+_STATS = [
+  "Overall",
+  "Attack",
+  "Defence",
+  "Strength",
+  "Hitpoints",
+  "Ranged",
+  "Prayer",
+  "Magic",
+  "Cooking",
+  "Woodcutting",
+  "Fletching",
+  "Fishing",
+  "Firemaking",
+  "Crafting",
+  "Smithing",
+  "Mining",
+  "Herblore",
+  "Agility",
+  "Thieving",
+  "Slayer",
+  "Farming",
+  "Runecrafting",
+  "Hunter",
+  "Construction",
+];
+
+_ACTIVITES = [
+  "League Points",
+  "Bounty Hunter - Hunter",
+  "Bounty Hunter - Rogue",
+  "Clue Scrolls (all)",
+  "Clue Scrolls (beginner)",
+  "Clue Scrolls (easy)",
+  "Clue Scrolls (medium)",
+  "Clue Scrolls (hard)",
+  "Clue Scrolls (elite)",
+  "Clue Scrolls (master)",
+  "LMS - Rank",
+  "Abyssal Sire",
+  "Alchemical Hydra",
+  "Barrows Chests",
+  "Bryophyta",
+  "Callisto",
+  "Cerberus",
+  "Chambers of Xeric",
+  "Chambers of Xeric: Challenge Mode",
+  "Chaos Elemental",
+  "Chaos Fanatic",
+  "Commander Zilyana",
+  "Corporeal Beast",
+  "Crazy Archaeologist",
+  "Dagannoth Prime",
+  "Dagannoth Rex",
+  "Dagannoth Supreme",
+  "Deranged Archaeologist",
+  "General Graardor",
+  "Giant Mole",
+  "Grotesque Guardians",
+  "Hespori",
+  "Kalphite Queen",
+  "King Black Dragon",
+  "Kraken",
+  "Kree'Arra",
+  "K'ril Tsutsaroth",
+  "Mimic",
+  "Nightmare",
+  "Obor",
+  "Sarachnis",
+  "Scorpia",
+  "Skotizo",
+  "The Gauntlet",
+  "The Corrupted Gauntlet",
+  "Theatre of Blood",
+  "Thermonuclear Smoke Devil",
+  "TzKal-Zuk",
+  "TzTok-Jad",
+  "Venenatis",
+  "Vet'ion",
+  "Vorkath",
+  "Wintertodt",
+  "Zalcano",
+  "Zulrah",
+];
+
+class RunescapePlayer {
+  _name;
+  _hiscore;
+
+  constructor(hiscore, name) {
+    this._hiscore = hiscore;
+    this._name = name;
+  }
+
+  getAllStatsString() {
+    // Format "Attack" --  Rank: ## Level: ## Exp: ##
+    let result = `${this._name} has the following stats:\n`;
+    let populated_stats = this._hiscore.slice(0, _STATS.length);
+
+    populated_stats.forEach((stat, index) => {
+      // stat will be format 'rank,level,exp'
+      let statRLE = stat.split(",");
+      result += `${_STATS[index]}: -- Rank: ${statRLE[0]} Level: ${statRLE[1]} Experience: ${statRLE[2]}\n`;
+    });
+
+    return result;
+  }
+
+  getAllStatsLevelString() {
+    // Format "Attack" -- Level: ##
+    let result = `${this._name} has the following stats:\n`;
+    let populated_stats = this._hiscore.slice(0, _STATS.length);
+
+    populated_stats.forEach((stat, index) => {
+      // stat will be format 'rank,level,exp'
+      let statRLE = stat.split(",");
+      result += `${_STATS[index]}: Level: ${statRLE[1]}\n`;
+    });
+
+    return result;
+  }
+}
 
 class RunescapeAPI {
   _instance;
@@ -141,6 +280,47 @@ class RunescapeAPI {
   //     this._itemAbbrv[0].push("hello");
   //   }
   // }
+
+  // Future improvement
+  // Improve the UI of the stats being printed since it is a huge wall of text
+  async getPlayer(playerName) {
+    let api_link = osrs_hisore_api_base + playerName;
+    // Fetch json for price
+    try {
+      const apiResponse = await fetch(api_link);
+      const apiText = await apiResponse.text();
+
+      let hiscore = apiText.trim().split("\n");
+
+      // If we get what we expect, then we can create a player
+      // if not we will return null
+      return hiscore.length === _STATS.length + _ACTIVITES.length
+        ? new RunescapePlayer(hiscore, playerName)
+        : null;
+    } catch (error) {
+      console.log("Fetching API went wrong", error);
+    }
+  }
+
+  async printStats(message, playerName) {
+    if (playerName.length < 1 || playerName.length > 12)
+      return message.reply(
+        `Sorry, osrs usernames can only be between 1 and 12 characters`
+      );
+    let player = await this.getPlayer(playerName);
+    if (player) message.reply(player.getAllStatsString());
+    else message.reply(`Sorry, ${playerName} does not exist on the hiscores`);
+  }
+
+  async printStatsSimple(message, playerName) {
+    if (playerName.length < 1 || playerName.length > 12)
+      return message.reply(
+        `Sorry, osrs usernames can only be between 1 and 12 characters`
+      );
+    let player = await this.getPlayer(playerName);
+    if (player) message.reply(player.getAllStatsLevelString());
+    else message.reply(`Sorry, ${playerName} does not exist on the hiscores`);
+  }
 
   shutdown() {
     let item_abbrv_json = JSON.stringify(this._itemAbbrv);

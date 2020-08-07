@@ -6,5 +6,6 @@
 
   "osrs_item_api": "https://www.osrsbox.com/osrsbox-db/items-complete.json",
   "osrs_ge_api_base": "http://services.runescape.com/m=itemdb_oldschool",
-  "osrs_ge_api_price": "/api/catalogue/detail.json?item="
+  "osrs_ge_api_price": "/api/catalogue/detail.json?item=",
+  "osrs_hisore_api_base": "https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player="
 }
