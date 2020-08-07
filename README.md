@@ -6,7 +6,7 @@ Discord bot built from scratch using discord.js and the official [tutorial](http
 
 - Radio playing through [listen.moe](https://listen.moe/), both korean and japanese
 - Basic polling functionality, creating + stopping polls
-- Runescape GE item price search
+- [WIP]Runescape GE item price search
 
 # Requirements
 
