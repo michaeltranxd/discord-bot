@@ -122,6 +122,58 @@ _ACTIVITES = [
 class RunescapePlayer {
   _name;
   _hiscore;
+  _stat_order = [
+    "Attack",
+    "Hitpoints",
+    "Mining",
+    "Strength",
+    "Agility",
+    "Smithing",
+    "Defence",
+    "Herblore",
+    "Fishing",
+    "Ranged",
+    "Thieving",
+    "Cooking",
+    "Prayer",
+    "Crafting",
+    "Firemaking",
+    "Magic",
+    "Fletching",
+    "Woodcutting",
+    "Runecrafting",
+    "Slayer",
+    "Farming",
+    "Construction",
+    "Hunter",
+    "Overall",
+  ];
+  _stat_emoji = [
+    "<:Attackicon:741713579132190802>",
+    "<:Hitpointsicon:741713579161682000>",
+    "<:Miningicon:741713578981195908>",
+    "<:Strengthicon:741713578817617952>",
+    "<:Agilityicon:741713579119476796>",
+    "<:Smithingicon:741713578805166173>",
+    "<:Defenceicon:741713579086184458>",
+    "<:Herbloreicon:741713579123671070>",
+    "<:Fishingicon:741713579069276283>",
+    "<:Rangedicon:741713578914086943>",
+    "<:Thievingicon:741713579308482580>",
+    "<:Cookingicon:741713579262083073>",
+    "<:Prayericon:741713579115282533>",
+    "<:Craftingicon:741713579157356565>",
+    "<:Firemakingicon:741713579161681950>",
+    "<:Magicicon:741713578800971778>",
+    "<:Fletchingicon:741713578947772538>",
+    "<:Woodcuttingicon:741713579132190742>",
+    "<:Runecrafticon:741713578716823594>",
+    "<:Slayericon:741713578897178636>",
+    "<:Farmingicon:741713578930995314>",
+    "<:Constructionicon:741713579098505296>",
+    "<:Huntericon:741713579102961744>",
+    "<:Overallicon:741719136362692609>",
+  ];
 
   constructor(hiscore, name) {
     this._hiscore = hiscore;
@@ -142,18 +194,38 @@ class RunescapePlayer {
     return result;
   }
 
-  getAllStatsLevelString() {
+  getAllStatsLevel() {
     // Format "Attack" -- Level: ##
     let result = `${this._name} has the following stats:\n`;
     let populated_stats = this._hiscore.slice(0, _STATS.length);
 
-    populated_stats.forEach((stat, index) => {
-      // stat will be format 'rank,level,exp'
-      let statRLE = stat.split(",");
-      result += `${_STATS[index]}: Level: ${statRLE[1]}\n`;
+    const embeddedMessage = new Discord.MessageEmbed()
+      .setColor("#0099ff")
+      .addFields({
+        name: "Skill Levels",
+        value: this._name,
+      })
+      .setTimestamp();
+
+    this._stat_order.forEach((stat, index) => {
+      let statValues =
+        populated_stats[
+          _STATS.findIndex((_stat) => {
+            console.log(_stat, stat);
+            return _stat === stat;
+          })
+        ];
+
+      let statRLE = statValues.split(",");
+
+      embeddedMessage.addFields({
+        name: `${stat}`,
+        value: `${this._stat_emoji[index]}${statRLE[1]}`,
+        inline: true,
+      });
     });
 
-    return result;
+    return embeddedMessage;
   }
 }
 
@@ -318,7 +390,7 @@ class RunescapeAPI {
         `Sorry, osrs usernames can only be between 1 and 12 characters`
       );
     let player = await this.getPlayer(playerName);
-    if (player) message.reply(player.getAllStatsLevelString());
+    if (player) message.reply(player.getAllStatsLevel());
     else message.reply(`Sorry, ${playerName} does not exist on the hiscores`);
   }
 
