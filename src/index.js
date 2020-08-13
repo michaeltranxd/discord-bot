@@ -2,9 +2,10 @@ const fs = require("fs");
 const fetch = require("node-fetch");
 const Discord = require("discord.js");
 const { prefix, token } = require("./config.json");
+const { radioKorean, radioJapanese } = require("./util/api_links.json");
+const { osrs_item_api } = require("./util/api_links.json");
 const Listen_Dot_Moe_Socket = require("./util/listen_dot_moe.js");
 const RunescapeAPIInstance = require("./util/runescape_api.js");
-const { osrs_item_api } = require("./util/api_links.json");
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -22,6 +23,10 @@ const cooldowns = new Discord.Collection();
 
 // register a socket object to be used later in listen command
 client.listen_dot_moe_socket = new Listen_Dot_Moe_Socket(client);
+
+// Create broadcast for our radios
+client.voice.createBroadcast().play(radioJapanese);
+client.voice.createBroadcast().play(radioKorean);
 
 // Run fetch to runescape api GE
 (async () => {
