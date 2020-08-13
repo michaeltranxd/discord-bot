@@ -211,7 +211,7 @@ class RunescapePlayer {
       let statValues =
         populated_stats[
           _STATS.findIndex((_stat) => {
-            console.log(_stat, stat);
+            //console.log(_stat, stat);
             return _stat === stat;
           })
         ];
@@ -246,7 +246,6 @@ class RunescapeAPI {
         );
         const item_data = JSON.parse(jsonString);
         this._itemAbbrv = item_data;
-        console.log(item_data);
       } catch (error) {
         console.error(error);
       }
@@ -255,8 +254,6 @@ class RunescapeAPI {
   }
 
   init(jsonData) {
-    console.log("hello");
-
     let keys = Object.keys(jsonData);
 
     keys.forEach((key) => {
@@ -285,7 +282,6 @@ class RunescapeAPI {
   searchItemByName(itemName) {
     let names = this._itemListByName.keyArray();
 
-    console.log(names);
     let potentialItems = [];
 
     // Loop through each name and check if the search has matches
@@ -293,7 +289,6 @@ class RunescapeAPI {
       if (name.indexOf(itemName) > -1) {
         // Found a potential match...
         potentialItems.push(name);
-        console.log(itemName);
       }
     });
 

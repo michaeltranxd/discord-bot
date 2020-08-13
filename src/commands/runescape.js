@@ -1,4 +1,5 @@
 const RunescapeAPIInstance = require("../util/runescape_api.js");
+const { prefix } = require("../config.json");
 
 module.exports = {
   name: "osrs",
@@ -7,9 +8,9 @@ module.exports = {
   aliases: ["rs"], // Include if aliases are desired
   args: true, // Include if command requires args
   usage:
-    "<item> <item-name>\n" +
-    "<lookup> <player-name>\n" +
-    "<lookup-simple> <player-name>",
+    "price <item-name>\n" +
+    "lookup <player-name>\n" +
+    "lookup-simple <player-name>",
   cooldown: 5,
   execute(message, args) {
     if (args != 2) {
