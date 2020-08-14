@@ -75,7 +75,7 @@ function play(message, voiceConnection, radioLink) {
     highWaterMark: 50,
   });
 
-  interval = message.client.setInterval(() => {
+  let interval = message.client.setInterval(() => {
     console.log("checking if users are in the chat");
 
     let voiceChannel = message.guild.me.voice.channel;
@@ -192,7 +192,7 @@ module.exports = {
     }
     // User is not in voice channel
     else {
-      message.reply("You must be in a voice channel");
+      return message.reply("You must be in a voice channel");
     }
   },
 };

@@ -88,7 +88,7 @@ class Listen_Dot_Moe_Socket {
         this.ws.close();
         this.ws = null;
       }
-      setTimeout(() => this.init(), 5000);
+      //setTimeout(() => this.init(), 5000);
     };
   }
 
