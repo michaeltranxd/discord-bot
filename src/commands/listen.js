@@ -7,7 +7,15 @@ let intervals = new Discord.Collection();
 
 function onDisconnect(message, voiceConnection) {
   message.client.clearInterval(intervals.get(voiceConnection.voice.id));
+  intervals.delete(voiceConnection.voice.id);
   message.client.listen_dot_moe_socket.closeSocket();
+
+  message.client.user
+    .setPresence({
+      activity: { name: "", type: "LISTENING" },
+      status: "online",
+    })
+    .catch(console.error);
 }
 
 function joinAndPlay(message, radioLink) {
@@ -68,7 +76,9 @@ function play(message, voiceConnection, radioLink) {
   });
 
   interval = message.client.setInterval(() => {
-    let voiceChannel = message.member.voice.channel;
+    console.log("checking if users are in the chat");
+
+    let voiceChannel = message.guild.me.voice.channel;
     if (voiceChannel.members.array().length === 1) {
       // We are the only one in the channel... so lets disconnect
       voiceConnection.disconnect();
