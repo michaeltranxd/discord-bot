@@ -18,6 +18,7 @@ function joinAndPlay(message, radioLink) {
     .join()
     .then((connection) => {
       play(message, connection, radioLink);
+      connection.on("debug", console.log);
       connection.on("disconnect", (error) => {
         if (error) {
           console.log(error);
@@ -34,14 +35,37 @@ function joinAndPlay(message, radioLink) {
 }
 
 function play(message, voiceConnection, radioLink) {
-  voiceConnection.play(radioLink, {
-    volume: 0.7,
-  });
+  let broadcastJpop = message.client.voice.broadcasts[0];
+  let broadcastKpop = message.client.voice.broadcasts[1];
 
   if (intervals.get(voiceConnection.voice.id)) {
     // Close old websocket + interval
     onDisconnect(message, voiceConnection);
   }
+
+  // Check if JPOP/KPOP streams
+  if (radioLink === broadcastJpop || radioLink === broadcastKpop) {
+    let link =
+      radioLink === message.client.voice.broadcasts[0]
+        ? radioJapanese
+        : radioKorean;
+
+    // set radiolink and start websocket previously created in index.js,
+    //  to grab song metadata (title, artist, so on)
+    message.client.listen_dot_moe_socket.setRadioLink(link);
+    message.client.listen_dot_moe_socket.init();
+
+    if (radioLink.player.dispatcher === null) {
+      // For some reason the dispatcher is null
+      console.log("Broadcast dispatcher 0 was null! Replay the stream...");
+      radioLink.play(link);
+    }
+  }
+
+  voiceConnection.play(radioLink, {
+    volume: 0.7,
+    highWaterMark: 50,
+  });
 
   interval = message.client.setInterval(() => {
     let voiceChannel = message.member.voice.channel;
@@ -52,22 +76,6 @@ function play(message, voiceConnection, radioLink) {
   }, vcTimeout * 60000);
 
   intervals.set(voiceConnection.voice.id, interval);
-
-  if (
-    radioLink === message.client.voice.broadcasts[0] ||
-    radioLink === message.client.voice.broadcasts[1]
-  ) {
-    let link =
-      radioLink === message.client.voice.broadcasts[0]
-        ? radioJapanese
-        : radioKorean;
-
-    // set radiolink and start websocket previously created in index.js,
-    //  to grab song metadata (title, artist, so on)
-    message.client.listen_dot_moe_socket.setRadioLink(link);
-    message.client.listen_dot_moe_socket.init();
-  } else {
-  }
 }
 
 async function validYTLink(client, link) {

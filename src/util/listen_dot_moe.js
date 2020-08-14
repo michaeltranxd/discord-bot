@@ -13,7 +13,7 @@ class Listen_Dot_Moe_Socket {
   }
 
   heartbeat(interval) {
-    this.heartbeatInterval = setInterval(() => {
+    this.heartbeatInterval = this.client.setInterval(() => {
       this.ws.send(JSON.stringify({ op: 9 }));
     }, interval);
   }
@@ -29,7 +29,7 @@ class Listen_Dot_Moe_Socket {
   init() {
     this.ws = new WebSocket(this.wsLink);
     this.ws.onopen = () => {
-      clearInterval(this.heartbeatInterval);
+      this.client.clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     };
 
@@ -82,7 +82,7 @@ class Listen_Dot_Moe_Socket {
     };
 
     this.ws.onclose = (error) => {
-      clearInterval(this.heartbeatInterval);
+      this.client.clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
       if (this.ws) {
         this.ws.close();
@@ -94,7 +94,7 @@ class Listen_Dot_Moe_Socket {
 
   closeSocket() {
     if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
+      this.client.clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     }
     if (this.ws) {

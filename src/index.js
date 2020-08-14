@@ -25,8 +25,19 @@ const cooldowns = new Discord.Collection();
 client.listen_dot_moe_socket = new Listen_Dot_Moe_Socket(client);
 
 // Create broadcast for our radios
-client.voice.createBroadcast().play(radioJapanese);
-client.voice.createBroadcast().play(radioKorean);
+let broadcast1 = client.voice.createBroadcast();
+let dispatcher1 = broadcast1.play(radioJapanese);
+dispatcher1.on("debug", console.log);
+dispatcher1.on("error", (err) => {
+  console.log("ended bc1", err);
+});
+
+let broadcast2 = client.voice.createBroadcast();
+let dispatcher2 = broadcast2.play(radioKorean);
+dispatcher2.on("debug", console.log);
+dispatcher2.on("error", (err) => {
+  console.log("ended bc1", err);
+});
 
 // Run fetch to runescape api GE
 (async () => {
@@ -124,6 +135,8 @@ client.on("message", (message) => {
     message.reply("there was an error trying to execute that command!");
   }
 });
+
+client.on("debug", console.log);
 
 client.on("error", (error) => {
   console.log(error);
